@@ -1,0 +1,17 @@
+{
+  "_comment": "可选配置：显式指定子类别 -> 四分类编码。未列出的条目会按 model/labeling.py 的关键词规则自动推断；纯数字目录请在此配置，或提供 garbage_label.txt。",
+  "label_map": {
+    "battery": "hazardous",
+    "biological": "kitchen",
+    "brown-glass": "recyclable",
+    "cardboard": "recyclable",
+    "clothes": "recyclable",
+    "green-glass": "recyclable",
+    "metal": "recyclable",
+    "paper": "recyclable",
+    "plastic": "recyclable",
+    "shoes": "recyclable",
+    "trash": "other",
+    "white-glass": "recyclable"
+  }
+}

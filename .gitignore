@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# 数据与训练产物（体积较大，保留目录结构）
+data/raw/
+data/splits/
+weights/*.pt
+weights/*.json
+weights/runs/
+weights/tune/
+weights/fold_*/
+
+# 其他
+uploads/
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+# 与项目无关的写作助手引导文件
+引导.md
