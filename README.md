@@ -125,6 +125,7 @@ $env:PORT="8000"
 $env:MODEL_PATH="weights/best.pt"
 $env:DEMO_FALLBACK="0"     # 关闭演示模式，模型缺失时直接返回 503
 $env:MAX_UPLOAD_MB="8"
+$env:MAX_IMAGE_PIXELS="40000000"   # 单图最大解码像素，防止小文件解压成超大图
 python app.py
 ```
 
@@ -134,15 +135,29 @@ python app.py
 
 ### 5.1 数据来源（公开、合法合规）
 
-1. **华为云 AI Gallery 垃圾分类数据集**（推荐）：约 40 个子类别，覆盖四分类，通常附带 `garbage_label.txt`（数字目录 → 中文标签），可直接用于本项目。
-2. **TrashNet（Kaggle）**：6 类可回收物细分（纸板、玻璃、金属、纸张、塑料、其他），适合做可回收物补充；缺少厨余与有害类别，需要另外补充。
-3. 校园自采数据：在食堂、宿舍、教学楼拍摄并人工标注，注意避开人脸、隐私信息，取得拍摄许可。
+1. **PaddleX / 华为云 40 类中文垃圾分类数据集**：40 个中文子类别，覆盖四分类，适合校园与国内投放标准。
+2. **Kaggle 12 类生活垃圾数据集**：纸、纸板、玻璃、金属、塑料、织物、电池、厨余、其他等，适合作为基础数据。
+3. **其他可选公开数据集**：RealWaste、TACO 等，可继续补充真实场景样本。
+4. 校园自采数据：在食堂、宿舍、教学楼拍摄并人工标注，注意避开人脸、隐私信息，取得拍摄许可。
 
-> **当前已下载**：Kaggle [Garbage Classification (12 classes)](https://www.kaggle.com/datasets/mostafaabla/garbage-classification)，15,515 张、238.9MB，12 个子类别，覆盖四分类。许可为 `Database: Open Database, Contents: © Original Authors`，仅用于课程研究。
+> **当前已下载 107,069 张原始图片**，来源如下（均已归并到四分类）：
 >
-> 清洗后共 **15,495 张**：可回收物 12,869 / 厨余垃圾 985 / 有害垃圾 945 / 其他垃圾 696。已按 70% / 15% / 15% 完成分层划分，并生成 5 折交叉验证数据。可回收物占比偏高，训练脚本已通过类别权重缓解不平衡。
-
-> 下载后请遵守数据集原始许可，报告中注明来源与用途。原始数据统一解压到 `data/raw/`。
+> | 数据集 | 使用张数 | 说明 |
+> | --- | ---: | --- |
+> | [Garbage Classification (12 classes)](https://www.kaggle.com/datasets/mostafaabla/garbage-classification) | 15,515 | 12 个子类，基础数据 |
+> | [PaddleX trash40](https://paddle-model-ecology.bj.bcebos.com/paddlex/data/trash40.tar) | 16,542 | 40 个中文子类，贴合国内标准 |
+> | [Recyclable and Household Waste](https://www.kaggle.com/datasets/alistairking/recyclable-and-household-waste-classification) | 15,000 | 30 个子类，MIT |
+> | [Waste Classification Data](https://www.kaggle.com/datasets/techsash/waste-classification-data) | 25,077 | 厨余 / 可回收，CC BY-SA 4.0 |
+> | [Garbage Dataset Classification](https://www.kaggle.com/datasets/zlatan599/garbage-dataset-classification) | 13,901 | 6 个材料类别 |
+> | [Garbage Classification Dataset](https://www.kaggle.com/datasets/namanjain001/garbage-classification-dataset) | 8,775 | 10 个子类 |
+> | [Garbage Dataset](https://www.kaggle.com/datasets/sumn2u/garbage-classification-v2) | 12,259 | 10 个子类，MIT |
+>
+> 清洗时扫描 **107,069 张**，按 MD5 去重 16,761 张、剔除过小图片 7 张，最终保留 **90,301 张唯一图片**：
+> 可回收物 59,162 / 厨余垃圾 20,087 / 有害垃圾 3,225 / 其他垃圾 7,827。
+>
+> 已按 70% / 15% / 15% 分层划分：train 63,207 / val 13,547 / test 13,547，并生成 5 折交叉验证数据。类别分布不均衡，训练脚本默认启用类别权重。
+>
+> 所有数据仅用于课程研究，请遵守各数据集原始许可并在报告中注明来源。原始数据统一放在 `data/raw/`。
 
 ### 5.2 支持的目录形式
 
@@ -281,7 +296,7 @@ python -m model.train --fold 2 --epochs 15
 
 ### POST `/api/predict`
 
-`multipart/form-data`，字段名 `file`，支持 JPG / PNG / WEBP / BMP，默认上限 8MB。
+`multipart/form-data`，字段名 `file`，支持 JPG / PNG / WEBP / BMP，默认文件上限 8MB、解码分辨率上限 40MP，均可通过环境变量调整。
 
 ```powershell
 curl.exe -X POST http://127.0.0.1:5000/api/predict -F "file=@D:\photos\bottle.jpg"
@@ -318,6 +333,8 @@ curl.exe -X POST http://127.0.0.1:5000/api/predict -F "file=@D:\photos\bottle.jp
 ```json
 { "success": false, "error": { "code": "invalid_image", "message": "无法解析该图片……" } }
 ```
+
+常见错误码：`bad_request`、`unsupported_type`、`invalid_image`、`file_too_large`、`image_too_large`（均为 400/413）、`model_unavailable`（503）、`not_found` / `method_not_allowed`（404/405）。
 
 ---
 

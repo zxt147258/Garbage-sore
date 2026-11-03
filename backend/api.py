@@ -10,7 +10,7 @@ from PIL import Image, UnidentifiedImageError
 
 from backend.advice import category_catalog
 from backend.predictor import ModelLoadError
-from config import ALLOWED_EXTENSIONS, MAX_UPLOAD_MB
+from config import ALLOWED_EXTENSIONS, MAX_IMAGE_PIXELS, MAX_UPLOAD_MB
 
 api_bp = Blueprint("api", __name__)
 
@@ -69,6 +69,16 @@ def predict():
 
     try:
         with Image.open(io.BytesIO(raw)) as probe:
+            width, height = probe.size
+            if width <= 0 or height <= 0:
+                return _error("图片尺寸无效。", code="invalid_image")
+            if width * height > MAX_IMAGE_PIXELS:
+                return _error(
+                    f"图片分辨率过大（{width}×{height}），请压缩到 "
+                    f"{MAX_IMAGE_PIXELS // 1_000_000}MP 以内。",
+                    status=413,
+                    code="image_too_large",
+                )
             probe.verify()
         with Image.open(io.BytesIO(raw)) as source:
             image = source.convert("RGB")

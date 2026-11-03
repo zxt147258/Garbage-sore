@@ -31,7 +31,7 @@
       <a href="#flow">使用流程</a>
     </nav>
 
-    <div class="status-pill" id="statusPill" title="正在检查服务状态">
+    <div class="status-pill" id="statusPill" role="status" aria-live="polite" title="正在检查服务状态">
       <span class="status-dot"></span>
       <span id="statusText">连接中</span>
     </div>
@@ -59,7 +59,7 @@
             <span class="step">01</span>
             <h2>上传图片</h2>
           </div>
-          <span class="panel-note">JPG · PNG · WEBP · 最大 8MB</span>
+          <span class="panel-note" id="uploadLimit">JPG · PNG · WEBP · BMP · 最大 8MB</span>
         </div>
 
         <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="点击或拖拽上传垃圾图片">

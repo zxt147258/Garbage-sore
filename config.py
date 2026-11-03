@@ -12,9 +12,10 @@ DATA_DIR = BASE_DIR / "data"
 _MODEL_PATH = Path(os.getenv("MODEL_PATH", str(WEIGHTS_DIR / "best.pt")))
 MODEL_PATH = _MODEL_PATH if _MODEL_PATH.is_absolute() else BASE_DIR / _MODEL_PATH
 
-# 单张图片上传上限（MB）
+# 单张图片上传上限（MB）与最大解码像素数，防止小文件解压成超大图
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "8"))
 MAX_CONTENT_LENGTH = MAX_UPLOAD_MB * 1024 * 1024
+MAX_IMAGE_PIXELS = int(os.getenv("MAX_IMAGE_PIXELS", "40000000"))
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "bmp"}
 

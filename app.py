@@ -60,6 +60,34 @@ def create_app() -> Flask:
             )
         return "Request entity too large", 413
 
+    @app.errorhandler(404)
+    def not_found(_):
+        if request.path.startswith("/api/"):
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": {"code": "not_found", "message": "接口不存在。"},
+                    }
+                ),
+                404,
+            )
+        return "Not Found", 404
+
+    @app.errorhandler(405)
+    def method_not_allowed(_):
+        if request.path.startswith("/api/"):
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": {"code": "method_not_allowed", "message": "请求方法不允许。"},
+                    }
+                ),
+                405,
+            )
+        return "Method Not Allowed", 405
+
     @app.after_request
     def add_headers(response):
         # 前后端分离时允许跨域；同域部署时该头无副作用

@@ -92,6 +92,7 @@
   const retryBtn = $("#retryBtn");
   const resultPanel = $("#resultPanel");
   const panelStatus = $("#panelStatus");
+  const uploadLimit = $("#uploadLimit");
   const resultBody = $("#resultBody");
   const resultLabel = $("#resultLabel");
   const resultSummary = $("#resultSummary");
@@ -176,10 +177,12 @@
   function selectFile(file) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
+      clearFile();
       showError("请选择图片文件（JPG、PNG、WEBP 或 BMP）。");
       return;
     }
     if (file.size > maxBytes) {
+      clearFile();
       showError(`图片大小不能超过 ${formatBytes(maxBytes)}，请压缩后重试。`);
       return;
     }
@@ -346,6 +349,9 @@
 
       const data = payload.data;
       maxBytes = Number(data.max_upload_mb) > 0 ? Number(data.max_upload_mb) * 1024 * 1024 : DEFAULT_MAX_BYTES;
+      if (uploadLimit) {
+        uploadLimit.textContent = `JPG · PNG · WEBP · BMP · 最大 ${formatBytes(maxBytes)}`;
+      }
 
       statusPill.classList.remove("is-ready", "is-demo", "is-offline");
       if (data.ready) {

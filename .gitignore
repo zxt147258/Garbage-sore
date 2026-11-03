@@ -22,3 +22,6 @@ Thumbs.db
 .vscode/
 # 与项目无关的写作助手引导文件
 引导.md
+.writerHelper/
+# 数据来源清单（含本地绝对路径，不提交）
+data/raw_manifest.csv
